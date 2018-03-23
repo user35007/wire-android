@@ -356,7 +356,7 @@ public class SignUpPhotoFragment extends BaseFragment<SignUpPhotoFragment.Contai
     //////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void onBitmapSelected(final ImageAsset imageAsset, boolean imageFromCamera, CameraContext cameraContext) {
+    public void onBitmapSelected(final ImageAsset imageAsset, CameraContext cameraContext) {
         if (cameraContext != CameraContext.SIGN_UP) {
             return;
         }

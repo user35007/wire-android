@@ -18,22 +18,24 @@
 package com.waz.zclient.pages.extendedcursor.image;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
 import com.waz.api.ImageAsset;
+import com.waz.api.ImageAssetFactory;
+import com.waz.utils.wrappers.URI;
 import com.waz.zclient.R;
 import com.waz.zclient.controllers.drawing.IDrawingController;
 import com.waz.zclient.pages.main.profile.views.ConfirmationMenu;
 import com.waz.zclient.pages.main.profile.views.ConfirmationMenuListener;
 import com.waz.zclient.ui.theme.OptionsDarkTheme;
-import com.waz.zclient.ui.utils.TextViewUtils;
 import com.waz.zclient.utils.ViewUtils;
 import com.waz.zclient.views.images.ImageAssetView;
-
 
 public class ImagePreviewLayout extends FrameLayout implements
                                                             ConfirmationMenuListener,
@@ -69,6 +71,15 @@ public class ImagePreviewLayout extends FrameLayout implements
 
     public ImagePreviewLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    public static ImagePreviewLayout newInstance(Context context, ViewGroup container, Callback callback) {
+        final ImagePreviewLayout imagePreviewLayout = (ImagePreviewLayout) LayoutInflater.from(context).inflate(
+            R.layout.fragment_cursor_images_preview,
+            container,
+            false);
+        imagePreviewLayout.callback = callback;
+        return imagePreviewLayout;
     }
 
     @Override
@@ -110,13 +121,23 @@ public class ImagePreviewLayout extends FrameLayout implements
         callback.onCancelPreview();
     }
 
-    public void setImageAsset(final ImageAsset imageAsset,
-                              Source source,
-                              Callback callback) {
+    public void setImage(ImageAsset imageAsset, Source source) {
         this.source = source;
         this.imageAsset = imageAsset;
-        this.callback = callback;
         imageView.setImageAsset(imageAsset);
+    }
+
+    public void setImage(byte[] imageData, boolean isMirrored) {
+        this.source = Source.CAMERA;
+        this.imageAsset = ImageAssetFactory.getImageAsset(imageData);
+        this.imageAsset.setMirrored(isMirrored);
+        imageView.setImageAsset(this.imageAsset);
+    }
+
+    public void setImage(URI uri, Source source) {
+        this.source = source;
+        this.imageAsset = ImageAssetFactory.getImageAsset(uri);
+        imageView.setImageAsset(this.imageAsset);
     }
 
     @Override
@@ -181,17 +202,6 @@ public class ImagePreviewLayout extends FrameLayout implements
         titleTextView.setText(title);
         titleTextViewContainer.setVisibility(TextUtils.isEmpty(titleTextView.getText()) ? GONE : VISIBLE);
     }
-
-    public void hightlightTitle() {
-        TextViewUtils.highlightAndBoldText(titleTextView,
-                                           ContextCompat.getColor(getContext(),
-                                                                  R.color.sharing__image_preview__title__color));
-    }
-
-    public void setTitleIsSingleLine(boolean isSingleLine) {
-        titleTextView.setSingleLine(isSingleLine);
-    }
-
 
     public interface Callback {
         void onCancelPreview();

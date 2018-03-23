@@ -173,7 +173,7 @@ class PreferencesActivity extends BaseActivity
   }
 
   //TODO do we need to check internet connectivity here?
-  override def onBitmapSelected(imageAsset: ImageAsset, imageFromCamera: Boolean, cameraContext: CameraContext) =
+  override def onBitmapSelected(imageAsset: ImageAsset, cameraContext: CameraContext): Unit =
     if (cameraContext == CameraContext.SETTINGS) {
       inject[Signal[ZMessaging]].head.map { zms =>
         zms.users.updateSelfPicture(imageAsset)

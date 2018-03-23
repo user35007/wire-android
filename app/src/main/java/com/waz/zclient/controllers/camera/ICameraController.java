@@ -31,7 +31,7 @@ public interface ICameraController {
 
     void closeCamera(CameraContext cameraContext);
 
-    void onBitmapSelected(ImageAsset imageAsset, boolean imageFromCamera, CameraContext cameraContext);
+    void onBitmapSelected(ImageAsset imageAsset, CameraContext cameraContext);
 
     void onCameraNotAvailable(CameraContext cameraContext);
 

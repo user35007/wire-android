@@ -30,8 +30,8 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
 import com.waz.api.ImageAsset;
-import com.waz.api.ImageAssetFactory;
 import com.waz.utils.wrappers.URI;
 import com.waz.zclient.OnBackPressedListener;
 import com.waz.zclient.R;
@@ -45,6 +45,7 @@ import com.waz.zclient.controllers.orientation.OrientationControllerObserver;
 import com.waz.zclient.conversation.ConversationController;
 import com.waz.zclient.pages.BaseFragment;
 import com.waz.zclient.pages.extendedcursor.image.ImagePreviewLayout;
+import com.waz.zclient.pages.extendedcursor.image.ImagePreviewLayout.Source;
 import com.waz.zclient.pages.main.conversation.AssetIntentsManager;
 import com.waz.zclient.pages.main.profile.camera.controls.CameraBottomControl;
 import com.waz.zclient.pages.main.profile.camera.controls.CameraTopControl;
@@ -73,7 +74,6 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
 
     private CameraPreviewTextureView cameraPreview;
     private TextView cameraNotAvailableTextView;
-    private ImageAsset imageAsset;
     private CameraTopControl cameraTopControl;
     private CameraBottomControl cameraBottomControl;
     private CameraFocusView focusView;
@@ -84,9 +84,6 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
 
     private int cameraPreviewAnimationDuration;
     private int cameraControlAnimationDuration;
-
-    //TODO pictureFromCamera is for tracking only, try to remove
-    private boolean pictureFromCamera;
 
     public static CameraFragment newInstance(CameraContext cameraContext) {
         return newInstance(cameraContext, false);
@@ -218,7 +215,6 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
         hideCameraFeed();
         imagePreviewContainer = null;
         previewProgressBar = null;
-        imageAsset = null;
         focusView = null;
         cameraTopControl = null;
 
@@ -286,9 +282,9 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
     }
 
     @Override
-    public void onPictureTaken(ImageAsset imageAsset) {
-        this.imageAsset = imageAsset;
-        showPreview(imageAsset, true);
+    public void onPictureTaken(byte[] imageData, boolean isMirrored) {
+        ImagePreviewLayout imagePreviewLayout = showPreview();
+        imagePreviewLayout.setImage(imageData, isMirrored);
     }
 
     @Override
@@ -380,24 +376,18 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
 
     @Override
     public void onSendPictureFromPreview(ImageAsset imageAsset, ImagePreviewLayout.Source source) {
-        getControllerFactory().getCameraController().onBitmapSelected(imageAsset, pictureFromCamera, cameraContext);
+        getControllerFactory().getCameraController().onBitmapSelected(imageAsset, cameraContext);
     }
 
-    private void showPreview(ImageAsset imageAsset, boolean bitmapFromCamera) {
-        pictureFromCamera = bitmapFromCamera;
+
+    private ImagePreviewLayout showPreview() {
         hideCameraFeed();
 
         previewProgressBar.setVisibility(View.GONE);
 
-        final ImagePreviewLayout imagePreviewLayout = (ImagePreviewLayout) LayoutInflater.from(getContext()).inflate(
-            R.layout.fragment_cursor_images_preview,
-            imagePreviewContainer,
-            false);
+        final ImagePreviewLayout imagePreviewLayout = ImagePreviewLayout.newInstance(getContext(), imagePreviewContainer, this);
         imagePreviewLayout.showSketch(cameraContext == CameraContext.MESSAGE);
 
-        imagePreviewLayout.setImageAsset(imageAsset,
-                                         ImagePreviewLayout.Source.CAMERA,
-                                         this);
         imagePreviewLayout.setAccentColor(getControllerFactory().getAccentColorController().getAccentColor().getColor());
 
         if (cameraContext == CameraContext.MESSAGE) {
@@ -415,10 +405,12 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
         imagePreviewContainer.addView(imagePreviewLayout);
         imagePreviewContainer.setVisibility(View.VISIBLE);
         ObjectAnimator.ofFloat(imagePreviewContainer,
-                               View.ALPHA,
-                               0,
-                               1).setDuration(cameraPreviewAnimationDuration).start();
+            View.ALPHA,
+            0,
+            1).setDuration(cameraPreviewAnimationDuration).start();
         cameraBottomControl.setVisibility(View.GONE);
+
+        return imagePreviewLayout;
     }
 
     private void hideImagePreviewOnAnimationEnd() {
@@ -462,14 +454,13 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
     }
 
     private void processGalleryImage(URI uri) {
-        imageAsset = null;
         hideCameraFeed();
         if (cameraContext != CameraContext.SIGN_UP) {
             previewProgressBar.setVisibility(View.VISIBLE);
         }
 
-        imageAsset = ImageAssetFactory.getImageAsset(uri);
-        showPreview(imageAsset, false);
+        ImagePreviewLayout imagePreviewLayout = showPreview();
+        imagePreviewLayout.setImage(uri, Source.CAMERA);
     }
 
     public interface Container extends CameraActionObserver {

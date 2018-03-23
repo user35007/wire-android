@@ -63,6 +63,7 @@ import com.waz.zclient.pages.BaseFragment
 import com.waz.zclient.pages.extendedcursor.ExtendedCursorContainer
 import com.waz.zclient.pages.extendedcursor.emoji.EmojiKeyboardLayout
 import com.waz.zclient.pages.extendedcursor.ephemeral.EphemeralLayout
+import com.waz.zclient.pages.extendedcursor.image.ImagePreviewLayout.Source
 import com.waz.zclient.pages.extendedcursor.image.{CursorImagesLayout, ImagePreviewLayout}
 import com.waz.zclient.pages.extendedcursor.voicefilter.VoiceFilterLayout
 import com.waz.zclient.pages.main.conversation.{AssetIntentsManager, MessageStreamAnimation}
@@ -517,7 +518,7 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
             )
         }
       case AssetIntentsManager.IntentType.GALLERY =>
-        showImagePreview(ImageAssetFactory.getImageAsset(uri), ImagePreviewLayout.Source.DEVICE_GALLERY)
+        showImagePreview { _.setImage(uri, Source.DEVICE_GALLERY) }
       case AssetIntentsManager.IntentType.VIDEO =>
         sendVideo(uri)
       case AssetIntentsManager.IntentType.CAMERA =>
@@ -609,12 +610,13 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
 
     override def onGalleryPictureSelected(asset: ImageAsset): Unit = {
       previewShown ! true
-      showImagePreview(asset, ImagePreviewLayout.Source.IN_APP_GALLERY)
+      showImagePreview { _.setImage(asset, ImagePreviewLayout.Source.IN_APP_GALLERY) }
     }
 
     override def openGallery(): Unit = assetIntentsManager.foreach { _.openGallery() }
 
-    override def onPictureTaken(imageAsset: ImageAsset): Unit = showImagePreview(imageAsset, ImagePreviewLayout.Source.CAMERA)
+    override def onPictureTaken(imageData: Array[Byte], isMirrored: Boolean): Unit =
+      showImagePreview { _.setImage(imageData, isMirrored) }
   }
 
   private def captureVideoAskPermissions() = for {
@@ -833,16 +835,12 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
     override def onPanelClosed(panel: View): Unit = {}
   }
 
-  private def showImagePreview(asset: ImageAsset, source: ImagePreviewLayout.Source): Unit = {
-    val imagePreviewLayout = LayoutInflater.from(getContext).inflate(R.layout.fragment_cursor_images_preview, containerPreview, false).asInstanceOf[ImagePreviewLayout]
-    imagePreviewLayout.setImageAsset(asset, source, imagePreviewCallback)
+  private def showImagePreview(setImage: (ImagePreviewLayout) => Any): Unit = {
+    val imagePreviewLayout = ImagePreviewLayout.newInstance(getContext, containerPreview, imagePreviewCallback)
+    setImage(imagePreviewLayout)
     imagePreviewLayout.setAccentColor(getControllerFactory.getAccentColorController.getAccentColor.getColor)
     convController.currentConv.head.map { conv => imagePreviewLayout.setTitle(conv.displayName) }
     containerPreview.addView(imagePreviewLayout)
-    openPreview(containerPreview)
-  }
-
-  private def openPreview(containerPreview: View): Unit = {
     previewShown ! true
     getControllerFactory.getNavigationController.setPagerEnabled(false)
     containerPreview.setTranslationY(getView.getMeasuredHeight)

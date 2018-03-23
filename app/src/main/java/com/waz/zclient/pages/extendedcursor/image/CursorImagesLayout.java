@@ -23,6 +23,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
+
 import com.waz.api.ImageAsset;
 import com.waz.zclient.R;
 import com.waz.zclient.ui.animation.interpolators.penner.Quint;
@@ -163,6 +164,6 @@ public class CursorImagesLayout extends FrameLayout implements View.OnClickListe
 
         void openGallery();
 
-        void onPictureTaken(ImageAsset imageAsset);
+        void onPictureTaken(byte[] imageData, boolean isMirrored);
     }
 }

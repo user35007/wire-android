@@ -232,7 +232,7 @@ class ConversationManagerFragment extends FragmentHelper
     navigationController.setRightPage(Page.MESSAGE_STREAM, ConversationManagerFragment.Tag)
   }
 
-  override def onBitmapSelected(imageAsset: ImageAsset, imageFromCamera: Boolean, cameraContext: CameraContext): Unit = {
+  override def onBitmapSelected(imageAsset: ImageAsset, cameraContext: CameraContext): Unit = {
     if (cameraContext ne CameraContext.MESSAGE) return
     inject[ConversationController].sendMessage(imageAsset)
     cameraController.closeCamera(CameraContext.MESSAGE)

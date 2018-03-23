@@ -28,7 +28,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.waz.api.ImageAsset;
+
 import com.waz.zclient.R;
 import com.waz.zclient.views.images.ImageAssetView;
 
@@ -67,9 +67,9 @@ class CursorImagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
 
         @Override
-        public void onPictureTaken(ImageAsset imageAsset) {
+        public void onPictureTaken(byte[] imageData, boolean isMirrored) {
             if (callback != null) {
-                callback.onPictureTaken(imageAsset);
+                callback.onPictureTaken(imageData, isMirrored);
             }
         }
     };
