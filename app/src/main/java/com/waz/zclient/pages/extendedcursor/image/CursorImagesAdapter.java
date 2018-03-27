@@ -29,7 +29,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.waz.utils.wrappers.AndroidURIUtil;
 import com.waz.zclient.R;
+import com.waz.zclient.messages.parts.GalleryItemViewHolder;
 import com.waz.zclient.views.images.ImageAssetView;
 
 class CursorImagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -134,8 +136,10 @@ class CursorImagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (getItemViewType(position) == VIEW_TYPE_GALLERY) {
             cursor.moveToPosition(cursor.getCount() - position);
-            ((GalleryItemViewHolder) holder).setPath(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
-            ((GalleryItemViewHolder) holder).setCallback(callback);
+            ((GalleryItemViewHolder) holder).bind(
+                cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)),
+                callback
+            );
         }
     }
 
