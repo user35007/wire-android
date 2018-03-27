@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.waz.api.ImageAsset;
+import com.waz.utils.wrappers.URI;
 import com.waz.zclient.R;
 import com.waz.zclient.ui.animation.interpolators.penner.Quint;
 import com.waz.zclient.utils.ViewUtils;
@@ -160,7 +161,7 @@ public class CursorImagesLayout extends FrameLayout implements View.OnClickListe
 
         void openVideo();
 
-        void onGalleryPictureSelected(ImageAsset asset);
+        void onGalleryPictureSelected(URI uri);
 
         void openGallery();
 

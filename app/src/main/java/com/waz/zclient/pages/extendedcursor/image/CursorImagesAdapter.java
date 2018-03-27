@@ -28,11 +28,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.waz.utils.wrappers.AndroidURIUtil;
 import com.waz.zclient.R;
-import com.waz.zclient.messages.parts.GalleryItemViewHolder;
-import com.waz.zclient.views.images.ImageAssetView;
+import com.waz.zclient.messages.parts.*;
 
 class CursorImagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -128,7 +125,8 @@ class CursorImagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             cameraViewHolder.getLayout().setCallback(cameraCallback);
             return cameraViewHolder;
         } else {
-            return new GalleryItemViewHolder((ImageAssetView) inflater.inflate(R.layout.item_cursor_gallery, parent, false));
+            CursorGalleryItem item = (CursorGalleryItem)inflater.inflate(R.layout.item_cursor_gallery, parent, false);
+            return new GalleryItemViewHolder(item);
         }
     }
 

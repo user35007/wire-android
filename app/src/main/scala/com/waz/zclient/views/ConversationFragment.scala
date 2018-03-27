@@ -63,9 +63,9 @@ import com.waz.zclient.pages.BaseFragment
 import com.waz.zclient.pages.extendedcursor.ExtendedCursorContainer
 import com.waz.zclient.pages.extendedcursor.emoji.EmojiKeyboardLayout
 import com.waz.zclient.pages.extendedcursor.ephemeral.EphemeralLayout
-import com.waz.zclient.pages.extendedcursor.image.ImagePreviewLayout.Source
-import com.waz.zclient.pages.extendedcursor.image.{CursorImagesLayout, ImagePreviewLayout}
+import com.waz.zclient.pages.extendedcursor.image.CursorImagesLayout
 import com.waz.zclient.pages.extendedcursor.voicefilter.VoiceFilterLayout
+import com.waz.zclient.pages.main.{ImagePreviewCallback, ImagePreviewLayout}
 import com.waz.zclient.pages.main.conversation.{AssetIntentsManager, MessageStreamAnimation}
 import com.waz.zclient.pages.main.conversationlist.ConversationListAnimation
 import com.waz.zclient.pages.main.conversationpager.controller.SlidingPaneObserver
@@ -419,7 +419,7 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
   override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent): Unit =
     assetIntentsManager.foreach { _.onActivityResult(requestCode, resultCode, data) }
 
-  private lazy val imagePreviewCallback = new ImagePreviewLayout.Callback {
+  private lazy val imagePreviewCallback = new ImagePreviewCallback {
     override def onCancelPreview(): Unit = {
       previewShown ! false
       getControllerFactory.getNavigationController.setPagerEnabled(true)
@@ -518,7 +518,7 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
             )
         }
       case AssetIntentsManager.IntentType.GALLERY =>
-        showImagePreview { _.setImage(uri, Source.DEVICE_GALLERY) }
+        showImagePreview { _.setImage(uri, ImagePreviewLayout.DeviceGallery) }
       case AssetIntentsManager.IntentType.VIDEO =>
         sendVideo(uri)
       case AssetIntentsManager.IntentType.CAMERA =>
@@ -608,9 +608,9 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
 
     override def openVideo(): Unit = captureVideoAskPermissions()
 
-    override def onGalleryPictureSelected(asset: ImageAsset): Unit = {
+    override def onGalleryPictureSelected(uri: URI): Unit = {
       previewShown ! true
-      showImagePreview { _.setImage(asset, ImagePreviewLayout.Source.IN_APP_GALLERY) }
+      showImagePreview { _.setImage(uri, ImagePreviewLayout.InAppGallery) }
     }
 
     override def openGallery(): Unit = assetIntentsManager.foreach { _.openGallery() }
@@ -838,8 +838,6 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
   private def showImagePreview(setImage: (ImagePreviewLayout) => Any): Unit = {
     val imagePreviewLayout = ImagePreviewLayout.newInstance(getContext, containerPreview, imagePreviewCallback)
     setImage(imagePreviewLayout)
-    imagePreviewLayout.setAccentColor(getControllerFactory.getAccentColorController.getAccentColor.getColor)
-    convController.currentConv.head.map { conv => imagePreviewLayout.setTitle(conv.displayName) }
     containerPreview.addView(imagePreviewLayout)
     previewShown ! true
     getControllerFactory.getNavigationController.setPagerEnabled(false)

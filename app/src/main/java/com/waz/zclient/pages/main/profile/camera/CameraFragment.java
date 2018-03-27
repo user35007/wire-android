@@ -42,15 +42,14 @@ import com.waz.zclient.controllers.accentcolor.AccentColorObserver;
 import com.waz.zclient.controllers.camera.CameraActionObserver;
 import com.waz.zclient.controllers.drawing.IDrawingController;
 import com.waz.zclient.controllers.orientation.OrientationControllerObserver;
-import com.waz.zclient.conversation.ConversationController;
 import com.waz.zclient.pages.BaseFragment;
-import com.waz.zclient.pages.extendedcursor.image.ImagePreviewLayout;
-import com.waz.zclient.pages.extendedcursor.image.ImagePreviewLayout.Source;
+import com.waz.zclient.pages.main.ImagePreviewCallback;
+import com.waz.zclient.pages.main.ImagePreviewLayout;
+import com.waz.zclient.pages.main.ImagePreviewLayout$;
 import com.waz.zclient.pages.main.conversation.AssetIntentsManager;
 import com.waz.zclient.pages.main.profile.camera.controls.CameraBottomControl;
 import com.waz.zclient.pages.main.profile.camera.controls.CameraTopControl;
 import com.waz.zclient.ui.animation.interpolators.penner.Expo;
-import com.waz.zclient.utils.Callback;
 import com.waz.zclient.utils.SquareOrientation;
 import com.waz.zclient.utils.ViewUtils;
 import com.waz.zclient.views.ProgressView;
@@ -61,7 +60,7 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
                                                                                       OrientationControllerObserver,
                                                                                       AccentColorObserver,
                                                                                       OnBackPressedListener,
-                                                                                      ImagePreviewLayout.Callback,
+                                                                                      ImagePreviewCallback,
                                                                                       CameraTopControl.CameraTopControlCallback,
                                                                                       CameraBottomControl.CameraBottomControlCallback {
     public static final String TAG = CameraFragment.class.getName();
@@ -233,10 +232,6 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
         return true;
     }
 
-    public CameraContext getCameraContext() {
-        return cameraContext;
-    }
-
     private void ensureCameraContext() {
         if (cameraContext != null) {
             return;
@@ -387,19 +382,7 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
 
         final ImagePreviewLayout imagePreviewLayout = ImagePreviewLayout.newInstance(getContext(), imagePreviewContainer, this);
         imagePreviewLayout.showSketch(cameraContext == CameraContext.MESSAGE);
-
-        imagePreviewLayout.setAccentColor(getControllerFactory().getAccentColorController().getAccentColor().getColor());
-
-        if (cameraContext == CameraContext.MESSAGE) {
-            inject(ConversationController.class).withCurrentConvName(new Callback<String>() {
-                @Override
-                public void callback(String convName) {
-                    imagePreviewLayout.setTitle(convName);
-                }
-            });
-        } else {
-            imagePreviewLayout.setTitle("");
-        }
+        imagePreviewLayout.showTitle(cameraContext == CameraContext.MESSAGE);
 
         imagePreviewContainer.removeAllViews();
         imagePreviewContainer.addView(imagePreviewLayout);
@@ -459,8 +442,7 @@ public class CameraFragment extends BaseFragment<CameraFragment.Container> imple
             previewProgressBar.setVisibility(View.VISIBLE);
         }
 
-        ImagePreviewLayout imagePreviewLayout = showPreview();
-        imagePreviewLayout.setImage(uri, Source.CAMERA);
+        showPreview().setImage(uri, ImagePreviewLayout$.MODULE$.CAMERA());
     }
 
     public interface Container extends CameraActionObserver {

@@ -17,19 +17,19 @@
  */
 package com.waz.zclient.messages.parts
 
-import java.io.File
+import android.content.Context
+import android.util.AttributeSet
+import android.widget.ImageView
+import com.waz.utils.wrappers.URI
+import com.waz.zclient.ViewHelper
+import com.waz.zclient.common.views.ImageAssetDrawable
 
-import android.support.v7.widget.RecyclerView
-import com.waz.utils.wrappers.AndroidURIUtil
-import com.waz.zclient.pages.extendedcursor.image.CursorImagesLayout
-import com.waz.zclient.utils.RichView
+class CursorGalleryItem(context: Context, attrs: AttributeSet, defStyleAttr: Int) extends ImageView(context, attrs, defStyleAttr) with ViewHelper {
+  def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
+  def this(context: Context) = this(context, null)
 
-class GalleryItemViewHolder(imageView: CursorGalleryItem) extends RecyclerView.ViewHolder(imageView) {
+  def setImage(uri: URI): Unit = setImageDrawable(ImageAssetDrawable(uri))
 
-  def bind(path: String, callback: CursorImagesLayout.Callback): Unit = {
-    val uri = AndroidURIUtil.fromFile(new File(path))
-    imageView.setImage(uri)
-    imageView.onClick(callback.onGalleryPictureSelected(uri))
-  }
-
+  override protected def onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int): Unit =
+    super.onMeasure(heightMeasureSpec, heightMeasureSpec) // to make it square
 }
