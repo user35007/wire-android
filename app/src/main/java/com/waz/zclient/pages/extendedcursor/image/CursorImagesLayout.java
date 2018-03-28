@@ -24,7 +24,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.waz.api.ImageAsset;
 import com.waz.utils.wrappers.URI;
 import com.waz.zclient.R;
 import com.waz.zclient.ui.animation.interpolators.penner.Quint;
